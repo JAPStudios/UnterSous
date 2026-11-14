@@ -13,7 +13,7 @@ The current mobile build provides a navigable service-information experience:
 - Delivery-service information.
 - Driving-opportunity information covering licensing support, legal eligibility and direct compensation.
 
-The navigation and screens work locally. They do not submit requests, create accounts or represent live services.
+The navigation and screens work locally. Automated component tests cover the overview, service information and driving information navigation. They do not submit requests, create accounts or represent live services.
 
 ### Run locally
 
