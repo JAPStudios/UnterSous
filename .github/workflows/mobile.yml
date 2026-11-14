@@ -29,6 +29,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
       - run: npm test -- --ci
       - run: npx expo config --type public
