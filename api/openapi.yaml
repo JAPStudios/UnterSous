@@ -1,0 +1,541 @@
+openapi: 3.1.0
+info:
+  title: UnterSous Service API
+  version: 0.1.0-draft
+  description: >
+    Stack-neutral draft API contract for passenger requests, driver eligibility,
+    dispatch, funding authorization and driver compensation. This contract is
+    a planning artifact, not a deployed API. Confirm it against the full product
+    specification and applicable jurisdiction before implementation.
+servers:
+  - url: https://api.untersous.example/v1
+    description: Placeholder; no production host has been selected.
+security:
+  - bearerAuth: []
+tags:
+  - name: Requests
+  - name: Drivers
+  - name: Dispatch
+  - name: Funding
+  - name: Compensation
+paths:
+  /requests:
+    post:
+      tags: [Requests]
+      summary: Submit a passenger or delivery request
+      operationId: createServiceRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestCreate'
+      responses:
+        '201':
+          description: Request submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    get:
+      tags: [Requests]
+      summary: List requests visible to the authenticated role
+      operationId: listServiceRequests
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/RequestStatus'
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/ServiceCategory'
+      responses:
+        '200':
+          description: Visible requests
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServiceRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /requests/{requestId}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    get:
+      tags: [Requests]
+      summary: Retrieve a request subject to role and privacy rules
+      operationId: getServiceRequest
+      responses:
+        '200':
+          description: Request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Requests]
+      summary: Request cancellation
+      operationId: cancelServiceRequest
+      responses:
+        '200':
+          description: Cancellation recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+        '409':
+          description: Request cannot be cancelled in its current state
+  /drivers/applications:
+    post:
+      tags: [Drivers]
+      summary: Submit a driver application
+      operationId: submitDriverApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverApplicationCreate'
+      responses:
+        '201':
+          description: Application submitted for review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverApplication'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    get:
+      tags: [Drivers]
+      summary: List driver applications for authorized reviewers
+      operationId: listDriverApplications
+      responses:
+        '200':
+          description: Applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DriverApplication'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /drivers/applications/{applicationId}/decision:
+    parameters:
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Drivers]
+      summary: Record an eligibility review decision
+      operationId: decideDriverApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, jurisdiction, categories, reason]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected, needs_more_information]
+                jurisdiction:
+                  type: string
+                  minLength: 2
+                categories:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: '#/components/schemas/ServiceCategory'
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+      responses:
+        '200':
+          description: Review decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverApplication'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Application is not in a reviewable state
+  /dispatch/assignments:
+    post:
+      tags: [Dispatch]
+      summary: Assign an eligible driver to an authorized request
+      operationId: createAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request_id, driver_id]
+              properties:
+                request_id:
+                  type: string
+                  format: uuid
+                driver_id:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Assignment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '409':
+          description: Driver ineligible, request not dispatchable, or funding authorization missing
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dispatch/assignments/{assignmentId}/events:
+    parameters:
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Dispatch]
+      summary: Record an assignment lifecycle event
+      operationId: recordAssignmentEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event]
+              properties:
+                event:
+                  type: string
+                  enum: [accepted, arrived, started, completed, cancelled]
+                occurred_at:
+                  type: string
+                  format: date-time
+                note:
+                  type: string
+                  maxLength: 1000
+      responses:
+        '200':
+          description: Event recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '409':
+          description: Invalid lifecycle transition
+  /funding/authorizations:
+    post:
+      tags: [Funding]
+      summary: Record authorization for a no-charge service
+      operationId: createFundingAuthorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundingAuthorizationCreate'
+      responses:
+        '201':
+          description: Funding authorization recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundingAuthorization'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /compensation/entries:
+    get:
+      tags: [Compensation]
+      summary: List compensation entries visible to the authenticated driver or administrator
+      operationId: listCompensationEntries
+      responses:
+        '200':
+          description: Compensation entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompensationEntry'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /compensation/entries/{entryId}/payment:
+    parameters:
+      - name: entryId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Compensation]
+      summary: Record confirmation of a driver compensation payment
+      operationId: confirmCompensationPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [payment_reference, paid_at]
+              properties:
+                payment_reference:
+                  type: string
+                  minLength: 1
+                  maxLength: 256
+                paid_at:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Payment confirmation recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompensationEntry'
+        '409':
+          description: Entry is not payable or is already paid
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Invalid request
+    Forbidden:
+      description: Authenticated role is not permitted to perform this operation
+    NotFound:
+      description: Record not found or not visible to this role
+  schemas:
+    ServiceCategory:
+      type: string
+      enum: [passenger, medical, legal, delivery]
+    RequestStatus:
+      type: string
+      enum: [submitted, needs_review, authorized, ready_for_dispatch, assigned, in_progress, completed, cancelled, declined]
+    ServiceRequestCreate:
+      type: object
+      additionalProperties: false
+      required: [category, pickup, destination, requested_at]
+      properties:
+        category:
+          $ref: '#/components/schemas/ServiceCategory'
+        pickup:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        requested_at:
+          type: string
+          format: date-time
+        accessibility_requirements:
+          type: array
+          items:
+            type: string
+            maxLength: 200
+        jurisdiction:
+          type: string
+          minLength: 2
+        funding_authorization_id:
+          type: string
+          format: uuid
+          description: Required before dispatch for a no-charge medical or legal trip.
+    ServiceRequest:
+      allOf:
+        - $ref: '#/components/schemas/ServiceRequestCreate'
+        - type: object
+          required: [id, status, created_at, updated_at]
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              $ref: '#/components/schemas/RequestStatus'
+            passenger_charge:
+              type: string
+              enum: ["0", "calculated", "waived"]
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    Location:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 250
+        address:
+          type: string
+          maxLength: 1000
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        access_notes:
+          type: string
+          maxLength: 1000
+    DriverApplicationCreate:
+      type: object
+      additionalProperties: false
+      required: [jurisdiction, requested_categories]
+      properties:
+        jurisdiction:
+          type: string
+          minLength: 2
+        requested_categories:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ServiceCategory'
+        evidence_references:
+          type: array
+          items:
+            type: string
+            format: uri
+    DriverApplication:
+      allOf:
+        - $ref: '#/components/schemas/DriverApplicationCreate'
+        - type: object
+          required: [id, status, submitted_at]
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [draft, submitted, under_review, approved, rejected, withdrawn, expired]
+            submitted_at:
+              type: string
+              format: date-time
+    Assignment:
+      type: object
+      required: [id, request_id, driver_id, status, events]
+      properties:
+        id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        driver_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [offered, accepted, arrived, in_progress, completed, cancelled]
+        events:
+          type: array
+          items:
+            type: object
+            required: [event, occurred_at]
+            properties:
+              event:
+                type: string
+              occurred_at:
+                type: string
+                format: date-time
+    FundingAuthorizationCreate:
+      type: object
+      additionalProperties: false
+      required: [category, source_name, authorization_reference, valid_from, valid_until]
+      properties:
+        category:
+          type: string
+          enum: [medical, legal]
+        source_name:
+          type: string
+          minLength: 1
+        authorization_reference:
+          type: string
+          minLength: 1
+        valid_from:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        maximum_amount:
+          type: string
+          pattern: '^[0-9]+(\.[0-9]{1,2})?$'
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+    FundingAuthorization:
+      allOf:
+        - $ref: '#/components/schemas/FundingAuthorizationCreate'
+        - type: object
+          required: [id, status]
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [pending, active, exhausted, expired, revoked]
+    CompensationEntry:
+      type: object
+      required: [id, driver_id, assignment_id, amount, currency, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        driver_id:
+          type: string
+          format: uuid
+        assignment_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          pattern: '^[0-9]+(\.[0-9]{1,2})?$'
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        status:
+          type: string
+          enum: [pending, approved, payable, paid, reversed]
+        payment_reference:
+          type: string
