@@ -16,18 +16,15 @@ Driver participation is conditional on the applicable jurisdiction's minimum-age
 
 Medical transportation, legal transportation, passenger rides and delivery are distinct service categories. Their eligibility rules, funding sources, dispatch requirements and operating obligations must remain distinguishable in the product and its records. A no-charge passenger trip must not be represented as an unfunded or uncompensated driver trip.
 
-## Product capabilities to be developed
+## Repository documentation
 
-1. Passenger request and trip-management workflows.
-2. Driver application, eligibility and onboarding workflows.
-3. Dispatch, assignment, status tracking and trip completion.
-4. Driver compensation records and payment administration.
-5. No-charge medical and legal trip classification and funding attribution.
-6. Delivery request and fulfilment workflows.
-7. Administrative controls, audit history and operational reporting.
-8. Privacy, security, accessibility and safety controls appropriate to the service.
-
-These are product requirements, not a claim that the capabilities already exist.
+- [Product requirements](docs/PRODUCT_REQUIREMENTS.md)
+- [Service and funding model](docs/SERVICE_AND_FUNDING_MODEL.md)
+- [Implementation backlog](docs/IMPLEMENTATION_BACKLOG.md)
+- [Core domain model](docs/DOMAIN_MODEL.md)
+- [Lifecycle and authorization rules](docs/LIFECYCLE_AND_AUTHORIZATION.md)
+- [Security and privacy threat model](docs/SECURITY_AND_PRIVACY_THREAT_MODEL.md)
+- [Draft OpenAPI contract](api/openapi.yaml)
 
 ## Development constraints
 
@@ -39,4 +36,6 @@ These are product requirements, not a claim that the capabilities already exist.
 
 ## Current repository status
 
-The repository currently contains this project brief only. The application, automated tests, deployment configuration and operational integrations have not yet been implemented. The detailed source specification and any additional approved requirements must be incorporated before implementation decisions are treated as final.
+The repository contains planning documentation and a draft, stack-neutral API contract. It does not yet contain a functioning passenger or driver application, backend service, database implementation, automated test suite, deployment configuration or operational integrations. The OpenAPI server address is a placeholder, not a live endpoint.
+
+The Google Docs source specification has not been available for verification. The current documentation is therefore a requirements baseline, not confirmation that every original requirement has been captured. Implementation decisions remain blocked on the full specification, launch jurisdiction, approved technical stack and operating rules.
