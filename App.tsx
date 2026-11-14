@@ -49,6 +49,9 @@ export default function App() {
   const [destination, setDestination] = useState("");
   const [details, setDetails] = useState("");
   const [request, setRequest] = useState<Request | null>(null);
+  const [jurisdiction, setJurisdiction] = useState("");
+  const [driverCategories, setDriverCategories] = useState<string[]>([]);
+  const [driverDraftSaved, setDriverDraftSaved] = useState(false);
 
   const serviceNote = useMemo(() => {
     if (service === "Medical transportation" || service === "Legal transportation") {
@@ -59,6 +62,22 @@ export default function App() {
     }
     return "Passenger charges and driver compensation are recorded separately.";
   }, [service]);
+
+  function toggleDriverCategory(category: string) {
+    setDriverCategories((current) => current.includes(category)
+      ? current.filter((item) => item !== category)
+      : [...current, category]);
+    setDriverDraftSaved(false);
+  }
+
+  function saveDriverDraft() {
+    if (!jurisdiction.trim() || driverCategories.length === 0) {
+      Alert.alert("Application details required", "Enter the jurisdiction and select at least one service category.");
+      return;
+    }
+    setDriverDraftSaved(true);
+    Alert.alert("Local application draft saved", "This information has not been submitted. No eligibility review or approval has taken place.");
+  }
 
   function saveDraft() {
     if (!pickup.trim() || !destination.trim()) {
@@ -207,16 +226,49 @@ export default function App() {
               </View>
               <View style={styles.driverCard}>
                 <Text style={styles.driverCardTitle}>Driver application</Text>
-                <Text style={styles.body}>Applications must be reviewed for the applicable jurisdiction and service category before driving work can be assigned.</Text>
+                <Text style={styles.body}>Start an application draft. Approval is jurisdiction- and service-specific; no driving work may be undertaken through this prototype.</Text>
+                <Text style={styles.fieldLabel}>JURISDICTION</Text>
+                <TextInput
+                  value={jurisdiction}
+                  onChangeText={(value) => { setJurisdiction(value); setDriverDraftSaved(false); }}
+                  placeholder="Country, state or province"
+                  placeholderTextColor="#8A9690"
+                  style={styles.input}
+                  accessibilityLabel="Driver jurisdiction"
+                />
+                <Text style={styles.fieldLabel}>SERVICE CATEGORIES REQUESTED</Text>
+                {services.map((item) => {
+                  const selected = driverCategories.includes(item.label);
+                  return (
+                    <Pressable
+                      key={item.label}
+                      onPress={() => toggleDriverCategory(item.label)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: selected }}
+                      style={styles.driverCategoryRow}
+                    >
+                      <Text style={[styles.categoryCheck, selected && styles.categoryCheckSelected]}>{selected ? "✓" : ""}</Text>
+                      <View style={styles.categoryCopy}>
+                        <Text style={styles.checkText}>{item.label}</Text>
+                        <Text style={styles.categoryDescription}>{item.description}</Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
                 <View style={styles.checkRow}><Text style={styles.checkIcon}>01</Text><Text style={styles.checkText}>Identity and jurisdiction review</Text></View>
                 <View style={styles.checkRow}><Text style={styles.checkIcon}>02</Text><Text style={styles.checkText}>Licence, vehicle and insurance eligibility</Text></View>
                 <View style={styles.checkRow}><Text style={styles.checkIcon}>03</Text><Text style={styles.checkText}>Required safety and background checks</Text></View>
-                <View style={styles.checkRow}><Text style={styles.checkIcon}>04</Text><Text style={styles.checkText}>Approval for specific service categories</Text></View>
+                <View style={styles.checkRow}><Text style={styles.checkIcon}>04</Text><Text style={styles.checkText}>Approval for selected service categories</Text></View>
                 <View style={styles.notice}>
                   <Text style={styles.noticeTitle}>Compensation principle</Text>
                   <Text style={styles.noticeText}>Driver compensation is separate from passenger charges. A free qualifying passenger journey does not mean unpaid driver work.</Text>
                 </View>
-                <Text style={styles.disclaimer}>Driver applications, eligibility verification, dispatch, trip events and payment processing are not connected in this prototype.</Text>
+                <Pressable onPress={saveDriverDraft} style={styles.primaryButton} accessibilityRole="button">
+                  <Text style={styles.primaryButtonText}>Save driver application draft</Text>
+                  <Text style={styles.buttonArrow}>→</Text>
+                </Pressable>
+                {driverDraftSaved && <Text style={styles.pending}>Application draft saved locally — not submitted or approved.</Text>}
+                <Text style={styles.disclaimer}>This draft is held only in memory. Identity documents, eligibility checks and application submission are not implemented.</Text>
               </View>
               <View style={styles.driverCard}>
                 <Text style={styles.driverCardTitle}>Driver workspace</Text>
@@ -286,6 +338,11 @@ const styles = StyleSheet.create({
   checkRow: { flexDirection: "row", alignItems: "center", marginTop: 17 },
   checkIcon: { width: 29, height: 29, borderRadius: 9, overflow: "hidden", textAlign: "center", textAlignVertical: "center", color: colors.green, backgroundColor: colors.greenLight, fontSize: 10, fontWeight: "800", paddingTop: 7 },
   checkText: { color: colors.ink, fontSize: 12, marginLeft: 10, flex: 1 },
+  driverCategoryRow: { flexDirection: "row", alignItems: "center", paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: colors.line },
+  categoryCheck: { width: 23, height: 23, borderRadius: 7, borderWidth: 1, borderColor: "#B7C2BA", textAlign: "center", textAlignVertical: "center", color: colors.white, fontSize: 14, overflow: "hidden" },
+  categoryCheckSelected: { backgroundColor: colors.green, borderColor: colors.green },
+  categoryCopy: { flex: 1 },
+  categoryDescription: { color: colors.muted, fontSize: 10, marginLeft: 10, marginTop: 2 },
   emptyState: { backgroundColor: colors.canvas, borderRadius: 12, alignItems: "center", padding: 22, marginTop: 17 },
   emptyIcon: { color: colors.green, fontSize: 29 },
   emptyTitle: { color: colors.ink, fontSize: 13, fontWeight: "800", marginTop: 5 },
