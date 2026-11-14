@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "UnterSous",
+    "slug": "untersous",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.japstudios.untersous",
+      "adaptiveIcon": {
+        "backgroundColor": "#142B27"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.japstudios.untersous"
+    }
+  }
+}
