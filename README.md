@@ -1,14 +1,19 @@
 # UnterSous
 
-UnterSous is a not-for-profit transportation and delivery service. Its intended model combines paid driver work with transportation that passengers can access without paying for qualifying medical and legal journeys.
+UnterSous is being developed as a not-for-profit transportation and delivery service. Its intended model includes paid driving opportunities, direct driver compensation from UnterSous and qualifying medical and legal transportation that is free to passengers.
 
 ## Mobile application
 
-The repository now includes an Expo / React Native application for Android and iOS.
+The repository contains an Expo / React Native mobile application for Android and iOS.
 
-- Passenger view: select one of four distinct service categories, enter pickup and destination details, add limited instructions and save a local request draft.
-- Driver view: see the eligibility and approval requirements, compensation principles and the current empty assignment workspace.
-- Shared presentation: responsive mobile layout, passenger/driver role switch, accessible control labels and category-specific service information.
+The current mobile build provides a navigable service-information experience:
+
+- Overview of the intended UnterSous service and compensation model.
+- Passenger-service information, including qualifying medical and legal transportation.
+- Delivery-service information.
+- Driving-opportunity information covering licensing support, legal eligibility and direct compensation.
+
+The navigation and screens work locally. They do not submit requests, create accounts or represent live services.
 
 ### Run locally
 
@@ -21,25 +26,19 @@ npx expo start
 
 Use Expo Go or an Android/iOS simulator to open the development build. The app configuration uses the Android application ID and iOS bundle identifier `com.japstudios.untersous`.
 
-### Current application limits
-
-This is the first mobile frontend implementation, not a production transportation platform. Request drafts exist only in application memory and disappear when the app closes. There is no authentication, network API connection, backend, database, live dispatch, mapping, location tracking, driver application submission, eligibility verification, payment processing, push notification or production deployment. The interface explicitly avoids representing a locally saved draft as a submitted or assigned request.
-
-The Expo / React Native stack is the implementation baseline for this initial mobile client. It can be revised if the complete source specification establishes a different required platform.
-
 ## Product objectives
 
-- Provide delivery and passenger-transportation services.
-- Pay participating drivers directly through UnterSous rather than making each driver's compensation depend on an individual passenger payment.
+- Provide passenger transportation and delivery services.
 - Provide qualifying medical and legal transportation to passengers at no charge.
-- Support people who want to begin driving and working once they are legally eligible in their jurisdiction, including people continuing their education and people supporting their families.
-- Avoid a business model that shifts the cost and financial risk of operating the service onto drivers.
+- Pay participating drivers directly through UnterSous rather than making each driver's compensation depend on an individual passenger payment.
+- Help people pursue the licensing steps available to them and access paid driving opportunities once legally eligible.
+- Avoid shifting the cost and financial risk of operating the service onto drivers.
 
-## Service boundaries
+## Service and legal boundaries
 
-Driver participation is conditional on the applicable jurisdiction's minimum-age, licensing, vehicle, insurance, background-check, safety and employment requirements. The product must not imply that someone may drive commercially before meeting those requirements.
+Driver participation is conditional on the applicable jurisdiction's minimum-age, licensing, vehicle, insurance, safety and employment requirements. The product must not imply that someone may drive commercially before meeting those requirements.
 
-Medical transportation, legal transportation, passenger rides and delivery are distinct service categories. Their eligibility rules, funding sources, dispatch requirements and operating obligations must remain distinguishable in the product and its records. A no-charge passenger trip must not be represented as an unfunded or uncompensated driver trip.
+Qualifying no-charge passenger transportation still requires a valid operating and funding arrangement, and driver compensation remains a separate obligation. Service availability, funding, eligibility and operating requirements must be established for each launch jurisdiction before live operations.
 
 ## Repository documentation
 
@@ -60,6 +59,6 @@ Medical transportation, legal transportation, passenger rides and delivery are d
 
 ## Remaining production work
 
-The application frontend is now present, but the production system remains incomplete. The backend, database, authenticated role permissions, dispatch, funding authorization, driver eligibility review, compensation ledger, payment integration, automated tests, deployment configuration and operational integrations are not implemented. The OpenAPI server address is a placeholder, not a live endpoint.
+The current mobile application is a navigable information interface, not a live transportation platform. Authentication, backend services, database, passenger requests, driver onboarding, licensing administration, eligibility review, dispatch, funding authorization, compensation ledger, payment processing, automated end-to-end tests and production deployment remain unimplemented. The OpenAPI server address is a placeholder, not a live endpoint.
 
-The original Google Docs source specification has not been available for verification. The current requirements baseline therefore cannot be treated as confirmation that every original requirement has been captured. Launch jurisdiction and the associated legal and operating rules also remain to be established.
+The complete original project specification has not been verified against the repository. The requirements baseline must be reconciled with that source before the remaining workflows can be considered complete. Launch jurisdiction and the associated legal, insurance, funding and operating rules must also be established.
