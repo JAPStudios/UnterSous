@@ -193,6 +193,31 @@ paths:
         '409':
           description: Application is not in a reviewable state
   /dispatch/assignments:
+    get:
+      tags: [Dispatch]
+      summary: List assignments visible to the authenticated driver or dispatch role
+      operationId: listAssignments
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [offered, accepted, arrived, in_progress, completed, cancelled]
+      responses:
+        '200':
+          description: Assignments within the caller's authorized scope
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Assignment'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       tags: [Dispatch]
       summary: Assign an eligible driver to an authorized request
@@ -222,6 +247,27 @@ paths:
           description: Driver ineligible, request not dispatchable, or funding authorization missing
         '403':
           $ref: '#/components/responses/Forbidden'
+  /dispatch/assignments/{assignmentId}:
+    parameters:
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Dispatch]
+      summary: Retrieve an assignment within the caller's authorized scope
+      operationId: getAssignment
+      responses:
+        '200':
+          description: Assignment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /dispatch/assignments/{assignmentId}/events:
     parameters:
       - name: assignmentId
