@@ -89,6 +89,19 @@ paths:
       tags: [Requests]
       summary: Request cancellation
       operationId: cancelServiceRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
       responses:
         '200':
           description: Cancellation recorded
@@ -221,6 +234,15 @@ paths:
       tags: [Dispatch]
       summary: Record an assignment lifecycle event
       operationId: recordAssignmentEvent
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Client-generated unique key; repeated submissions with the same key must return the original result without duplicating the event.
+          schema:
+            type: string
+            minLength: 16
+            maxLength: 128
       requestBody:
         required: true
         content:
@@ -232,15 +254,12 @@ paths:
                 event:
                   type: string
                   enum: [accepted, arrived, started, completed, cancelled]
-                occurred_at:
-                  type: string
-                  format: date-time
                 note:
                   type: string
                   maxLength: 1000
       responses:
         '200':
-          description: Event recorded
+          description: Event recorded with a server-generated timestamp
           content:
             application/json:
               schema:
