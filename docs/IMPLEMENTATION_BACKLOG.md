@@ -9,6 +9,7 @@ Status: mixed. The mobile information interface is implemented; the production s
 - [x] Overview of the not-for-profit transportation and delivery model.
 - [x] Display of the direct-driver-compensation principle.
 - [x] Display of licensing support and legal eligibility principles.
+- [x] Component tests for the overview, services and driving navigation.
 - [x] Product requirements baseline: `docs/PRODUCT_REQUIREMENTS.md`.
 - [x] Service and funding model: `docs/SERVICE_AND_FUNDING_MODEL.md`.
 - [x] Core domain model: `docs/DOMAIN_MODEL.md`.
@@ -45,7 +46,7 @@ Status: mixed. The mobile information interface is implemented; the production s
 
 ## Verification and release
 
-- [ ] Automated unit, integration and end-to-end tests.
+- [ ] Expand automated tests to backend unit, integration and end-to-end coverage.
 - [ ] Lifecycle-transition and authorization-denial tests.
 - [ ] OpenAPI validation and client compatibility checks.
 - [ ] Dependency, secret and static security checks.
